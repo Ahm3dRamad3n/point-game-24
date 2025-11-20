@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Point Game 24 - Make 24 using four numbers and three operators">
+    <meta name="theme-color" content="#3b82f6">
+    <title>Point Game 24 - PWA</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%233b82f6' width='192' height='192'/><text x='50%' y='50%' font-size='120' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='central'>24</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #6b7280;
+        }
+
+        .game-section {
+            background: #f9fafb;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .game-header {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .numbers-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .numbers-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .number-box {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: default;
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .number-box:hover {
+            transform: translateY(-2px);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 14px;
+            color: #374151;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .expression-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .expression-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #7f1d1d;
+            border-left: 4px solid #ef4444;
+        }
+
+        .message.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .btn-check {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-solvable {
+            background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+            color: white;
+        }
+
+        .btn-solve {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+        }
+
+        .btn-new-game {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            /*grid-column: 1 / -1;*/
+        }
+
+        .instructions {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 25px;
+        }
+
+        .instructions-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 12px;
+        }
+
+        .instructions-list {
+            list-style: none;
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.8;
+        }
+
+        .instructions-list li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .instructions-list li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #3b82f6;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .title {
+                font-size: 24px;
+            }
+
+            .numbers-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .number-box {
+                padding: 15px;
+                font-size: 24px;
+            }
+
+            .buttons-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-new-game {
+                grid-column: 1;
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            }
+
+            .container {
+                background: #1f2937;
+                color: #f3f4f6;
+            }
+
+            .title {
+                color: #f3f4f6;
+            }
+
+            .subtitle {
+                color: #d1d5db;
+            }
+
+            .game-section {
+                background: #111827;
+            }
+
+            .input-label,
+            .numbers-label {
+                color: #d1d5db;
+            }
+
+            .expression-input {
+                background: #374151;
+                color: #f3f4f6;
+                border-color: #4b5563;
+            }
+
+            .expression-input:focus {
+                border-color: #3b82f6;
+            }
+
+            .instructions {
+                background: #0f172a;
+                color: #e0e7ff;
+            }
+
+            .instructions-title {
+                color: #93c5fd;
+            }
+
+            .footer {
+                color: #6b7280;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">Point Game 24</div>
+            <div class="subtitle">Use the four numbers and three operators to make 24</div>
+        </div>
+
+        <div class="game-section">
+            <div class="game-header">Make 24</div>
+
+            <div class="numbers-label">Your Numbers</div>
+            <div class="numbers-grid" id="numbersGrid">
+                <!-- Numbers will be inserted here by JavaScript -->
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Enter Expression (e.g., 3 + 5 * 2 - 1)</label>
+                <input type="text" class="expression-input" id="expressionInput" placeholder="e.g., 3 + 5 * 2 - 1">
+            </div>
+
+            <div class="message" id="message"></div>
+
+            <div class="buttons-grid">
+                <button class="button btn-check" onclick="checkAnswer()">✓ Check</button>
+                <button class="button btn-solvable" onclick="checkSolvable()">⊕ Solvable?</button>
+                <button class="button btn-solve" onclick="showSolution()">⊙ Solve</button>
+                <button class="button btn-new-game" onclick="newGame()">↻ New Game</button>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <div class="instructions-title">How to Play</div>
+            <ul class="instructions-list">
+                <li>Use each number exactly once</li>
+                <li>Use exactly three operators (+, -, *, /)</li>
+                <li>Division must result in whole numbers</li>
+                <li>Follows proper order of operations (*, / before +, -)</li>
+                <li>Goal: Make the result equal to 24</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>Challenge yourself to find the solution!</p>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // GAME LOGIC - Core Functions
+        // ============================================
+
+        /**
+         * Shuffle an array using Fisher-Yates algorithm
+         */
+        function shuffle(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        /**
+         * Generate a new set of 4 random game numbers (1-13)
+         */
+        function generateGameNumbers() {
+            const allNumbers = Array.from({ length: 13 }, (_, i) => i + 1);
+            const shuffled = shuffle(allNumbers);
+            return shuffled.slice(0, 4);
+        }
+
+        /**
+         * Safely evaluate a mathematical expression
+         * Validates integer division and follows proper order of operations
+         */
+        function safeEvaluate(expression) {
+            try {
+                // Validate expression contains only numbers, operators, and spaces
+                if (!/^[\d\s+\-*/()]+$/.test(expression)) {
+                    return null;
+                }
+
+                // Check for division operations and validate they result in integers
+                const divisionPattern = /(\d+)\s*\/\s*(\d+)/g;
+                let match;
+                while ((match = divisionPattern.exec(expression)) !== null) {
+                    const dividend = parseInt(match[1], 10);
+                    const divisor = parseInt(match[2], 10);
+
+                    // Check for division by zero
+                    if (divisor === 0) {
+                        return null;
+                    }
+
+                    // Check for non-integer division
+                    if (dividend % divisor !== 0) {
+                        return null;
+                    }
+                }
+
+                // Use Function constructor for safe evaluation
+                const result = Function('"use strict"; return (' + expression + ')')();
+
+                // Ensure result is a valid number
+                if (typeof result !== "number" || isNaN(result) || !isFinite(result)) {
+                    return null;
+                }
+
+                return result;
+            } catch {
+                return null;
+            }
+        }
+
+        /**
+         * Find a solution for the given numbers
+         * Uses brute-force approach with all permutations
+         */
+        function getSolution(numbers) {
+            const operators = ["+", "-", "*", "/"];
+
+            // Generate all permutations of the 4 numbers
+            for (let p1 = 0; p1 < 4; p1++) {
+                for (let p2 = 0; p2 < 4; p2++) {
+                    if (p2 === p1) continue;
+
+                    for (let p3 = 0; p3 < 4; p3++) {
+                        if (p3 === p1 || p3 === p2) continue;
+
+                        for (let p4 = 0; p4 < 4; p4++) {
+                            if (p4 === p1 || p4 === p2 || p4 === p3) continue;
+
+                            const currentOrder = [numbers[p1], numbers[p2], numbers[p3], numbers[p4]];
+
+                            // Try all combinations of 3 operators
+                            for (let i = 0; i < 4; i++) {
+                                for (let j = 0; j < 4; j++) {
+                                    for (let k = 0; k < 4; k++) {
+                                        const op1 = operators[i];
+                                        const op2 = operators[j];
+                                        const op3 = operators[k];
+
+                                        // Build expression
+                                        const expression = `${currentOrder[0]} ${op1} ${currentOrder[1]} ${op2} ${currentOrder[2]} ${op3} ${currentOrder[3]}`;
+
+                                        // Evaluate using safe evaluation
+                                        const result = safeEvaluate(expression);
+
+                                        if (result !== null && result === 24) {
+                                            return expression;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * Check if a solution exists for the given numbers
+         */
+        function isSolvable(numbers) {
+            return getSolution(numbers) !== null;
+        }
+
+        /**
+         * Validate user expression
+         */
+        function validateExpression(expression, gameNumbers) {
+            const exp = expression.trim();
+
+            if (!exp) {
+                return { valid: false, error: "Expression cannot be empty." };
+            }
+
+            // Extract all numbers from the expression
+            const numberMatches = exp.match(/\d+/g) || [];
+            const usedNumbers = numberMatches.map((n) => parseInt(n, 10));
+
+            // Check if exactly 4 numbers are used
+            if (usedNumbers.length !== 4) {
+                return { valid: false, error: "Please use exactly 4 numbers." };
+            }
+
+            // Check if all used numbers are from the game set
+            const gameNumbersCopy = [...gameNumbers];
+            for (const num of usedNumbers) {
+                const index = gameNumbersCopy.indexOf(num);
+                if (index === -1) {
+                    return {
+                        valid: false,
+                        error: `Please use the given numbers only: ${gameNumbers.join(", ")}`,
+                    };
+                }
+                gameNumbersCopy.splice(index, 1);
+            }
+
+            // Count operators
+            const operatorMatches = exp.match(/[+\-*/]/g) || [];
+            if (operatorMatches.length !== 3) {
+                return { valid: false, error: "Please use exactly 3 operators." };
+            }
+
+            return { valid: true, expression: exp };
+        }
+
+        // ============================================
+        // GAME STATE MANAGEMENT
+        // ============================================
+
+        let gameState = {
+            numbers: [],
+            solution: null,
+            expression: "",
+        };
+
+        /**
+         * Initialize a new game
+         */
+        function initializeGame() {
+            gameState.numbers = generateGameNumbers();
+            gameState.solution = getSolution(gameState.numbers);
+            gameState.expression = "";
+            document.getElementById("expressionInput").value = "";
+            clearMessage();
+            renderNumbers();
+        }
+
+        /**
+         * Render game numbers to the UI
+         */
+        function renderNumbers() {
+            const grid = document.getElementById("numbersGrid");
+            grid.innerHTML = gameState.numbers
+                .map((num) => `<button class="number-box">${num}</button>`)
+                .join("");
+        }
+
+        /**
+         * Show a message to the user
+         */
+        function showMessage(text, type) {
+            const messageEl = document.getElementById("message");
+            messageEl.textContent = text;
+            messageEl.className = `message show ${type}`;
+        }
+
+        /**
+         * Clear the message
+         */
+        function clearMessage() {
+            const messageEl = document.getElementById("message");
+            messageEl.className = "message";
+        }
+
+        // ============================================
+        // UI EVENT HANDLERS
+        // ============================================
+
+        /**
+         * Handle Check button click
+         */
+        function checkAnswer() {
+            const expression = document.getElementById("expressionInput").value;
+            const validation = validateExpression(expression, gameState.numbers);
+
+            if (!validation.valid) {
+                showMessage(validation.error || "Invalid expression", "error");
+                return;
+            }
+
+            const result = safeEvaluate(validation.expression);
+
+            if (result === null) {
+                showMessage(
+                    "Incorrect! Invalid operation (division by zero or non-integer division).",
+                    "error"
+                );
+                return;
+            }
+
+            if (result === 24) {
+                showMessage(`Correct! ${validation.expression} = 24`, "success");
+            } else {
+                showMessage(`Incorrect! ${validation.expression} = ${result}`, "error");
+            }
+        }
+
+        /**
+         * Handle Solvable button click
+         */
+        function checkSolvable() {
+            const solvable = isSolvable(gameState.numbers);
+            if (solvable) {
+                showMessage("✓ This puzzle has a solution!", "success");
+            } else {
+                showMessage(
+                    "✗ This puzzle has no solution. Click 'New Game' to get new numbers.",
+                    "error"
+                );
+            }
+        }
+
+        /**
+         * Handle Solve button click
+         */
+        function showSolution() {
+            if (gameState.solution) {
+                showMessage(`Solution: ${gameState.solution}`, "info");
+                document.getElementById("expressionInput").value = gameState.solution;
+            } else {
+                showMessage(
+                    "No solution exists. Click 'New Game' to get new numbers.",
+                    "info"
+                );
+            }
+        }
+
+        /**
+         * Handle New Game button click
+         */
+        function newGame() {
+            initializeGame();
+            showMessage("", "");
+        }
+
+        /**
+         * Handle expression input changes
+         */
+        document.addEventListener("DOMContentLoaded", function () {
+            const expressionInput = document.getElementById("expressionInput");
+            expressionInput.addEventListener("input", function () {
+                gameState.expression = this.value;
+            });
+
+            // Initialize the game on page load
+            initializeGame();
+
+            // Register service worker for PWA
+            if ("serviceWorker" in navigator) {
+                navigator.serviceWorker.register("sw.js").catch(() => {
+                    // Service worker registration failed, app will still work
+                });
+            }
+        });
+
+        // Allow Enter key to check answer
+        document.addEventListener("keypress", function (event) {
+            if (event.key === "Enter") {
+                checkAnswer();
+            }
+        });
+    </script>
+</body>
+</html>
