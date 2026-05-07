@@ -397,10 +397,6 @@
     </div>
 
     <script>
-        // ============================================
-        // GAME LOGIC - Core Functions
-        // ============================================
-
         /**
          * Shuffle an array using Fisher-Yates algorithm
          */
@@ -428,33 +424,27 @@
          */
         function safeEvaluate(expression) {
             try {
-                // Validate expression contains only numbers, operators, and spaces
                 if (!/^[\d\s+\-*/()]+$/.test(expression)) {
                     return null;
                 }
 
-                // Check for division operations and validate they result in integers
                 const divisionPattern = /(\d+)\s*\/\s*(\d+)/g;
                 let match;
                 while ((match = divisionPattern.exec(expression)) !== null) {
                     const dividend = parseInt(match[1], 10);
                     const divisor = parseInt(match[2], 10);
 
-                    // Check for division by zero
                     if (divisor === 0) {
                         return null;
                     }
 
-                    // Check for non-integer division
                     if (dividend % divisor !== 0) {
                         return null;
                     }
                 }
 
-                // Use Function constructor for safe evaluation
                 const result = Function('"use strict"; return (' + expression + ')')();
 
-                // Ensure result is a valid number
                 if (typeof result !== "number" || isNaN(result) || !isFinite(result)) {
                     return null;
                 }
@@ -472,7 +462,6 @@
         function getSolution(numbers) {
             const operators = ["+", "-", "*", "/"];
 
-            // Generate all permutations of the 4 numbers
             for (let p1 = 0; p1 < 4; p1++) {
                 for (let p2 = 0; p2 < 4; p2++) {
                     if (p2 === p1) continue;
@@ -493,10 +482,8 @@
                                         const op2 = operators[j];
                                         const op3 = operators[k];
 
-                                        // Build expression
                                         const expression = `${currentOrder[0]} ${op1} ${currentOrder[1]} ${op2} ${currentOrder[2]} ${op3} ${currentOrder[3]}`;
 
-                                        // Evaluate using safe evaluation
                                         const result = safeEvaluate(expression);
 
                                         if (result !== null && result === 24) {
@@ -530,16 +517,13 @@
                 return { valid: false, error: "Expression cannot be empty." };
             }
 
-            // Extract all numbers from the expression
             const numberMatches = exp.match(/\d+/g) || [];
             const usedNumbers = numberMatches.map((n) => parseInt(n, 10));
 
-            // Check if exactly 4 numbers are used
             if (usedNumbers.length !== 4) {
                 return { valid: false, error: "Please use exactly 4 numbers." };
             }
 
-            // Check if all used numbers are from the game set
             const gameNumbersCopy = [...gameNumbers];
             for (const num of usedNumbers) {
                 const index = gameNumbersCopy.indexOf(num);
@@ -552,7 +536,6 @@
                 gameNumbersCopy.splice(index, 1);
             }
 
-            // Count operators
             const operatorMatches = exp.match(/[+\-*/]/g) || [];
             if (operatorMatches.length !== 3) {
                 return { valid: false, error: "Please use exactly 3 operators." };
@@ -561,19 +544,14 @@
             return { valid: true, expression: exp };
         }
 
-        // ============================================
-        // GAME STATE MANAGEMENT
-        // ============================================
 
+        
         let gameState = {
             numbers: [],
             solution: null,
             expression: "",
         };
 
-        /**
-         * Initialize a new game
-         */
         function initializeGame() {
             gameState.numbers = generateGameNumbers();
             gameState.solution = getSolution(gameState.numbers);
@@ -583,9 +561,6 @@
             renderNumbers();
         }
 
-        /**
-         * Render game numbers to the UI
-         */
         function renderNumbers() {
             const grid = document.getElementById("numbersGrid");
             grid.innerHTML = gameState.numbers
@@ -593,30 +568,17 @@
                 .join("");
         }
 
-        /**
-         * Show a message to the user
-         */
         function showMessage(text, type) {
             const messageEl = document.getElementById("message");
             messageEl.textContent = text;
             messageEl.className = `message show ${type}`;
         }
 
-        /**
-         * Clear the message
-         */
         function clearMessage() {
             const messageEl = document.getElementById("message");
             messageEl.className = "message";
         }
 
-        // ============================================
-        // UI EVENT HANDLERS
-        // ============================================
-
-        /**
-         * Handle Check button click
-         */
         function checkAnswer() {
             const expression = document.getElementById("expressionInput").value;
             const validation = validateExpression(expression, gameState.numbers);
@@ -643,9 +605,6 @@
             }
         }
 
-        /**
-         * Handle Solvable button click
-         */
         function checkSolvable() {
             const solvable = isSolvable(gameState.numbers);
             if (solvable) {
@@ -658,9 +617,6 @@
             }
         }
 
-        /**
-         * Handle Solve button click
-         */
         function showSolution() {
             if (gameState.solution) {
                 showMessage(`Solution: ${gameState.solution}`, "info");
@@ -673,9 +629,6 @@
             }
         }
 
-        /**
-         * Handle New Game button click
-         */
         function newGame() {
             initializeGame();
             showMessage("", "");
@@ -690,7 +643,6 @@
                 gameState.expression = this.value;
             });
 
-            // Initialize the game on page load
             initializeGame();
         });
 
