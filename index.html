@@ -26,17 +26,17 @@
             justify-content: center;
             align-items: center;
             min-height: 100dvh;
-            padding: 12px;
+            padding: 0; /* تم التعديل لتملأ الشاشة */
         }
 
         .container {
             background: white;
-            border-radius: 20px;
+            border-radius: 0; /* تم التعديل لتملأ الشاشة */
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 24px;
-            max-width: 760px;
+            max-width: 100vw; /* تم التعديل لتملأ الشاشة */
             width: 100%;
-            height: calc(100dvh - 24px);
+            height: 100dvh; /* تم التعديل لتملأ الشاشة */
             display: flex;
             flex-direction: column;
             gap: 16px;
@@ -176,7 +176,7 @@
             border-radius: 15px;
             padding: 24px;
             margin-bottom: 0;
-            flex: 1 1 auto;
+            flex: 1; /* تم التعديل لتملأ المساحة */
             min-height: 0;
             display: flex;
             flex-direction: column;
@@ -204,14 +204,15 @@
         }
 
         .numbers-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+            display: flex; /* تم التعديل إلى Flex لتمدد الأزرار */
+            flex: 1; /* تم التعديل لتملأ المساحة */
             gap: clamp(8px, 1.6vw, 14px);
             margin-bottom: 0;
-            align-items: center;
+            align-items: stretch;
         }
 
         .number-box {
+            flex: 1; /* تم التعديل لتملأ المساحة */
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: white;
             border: none;
@@ -222,6 +223,9 @@
             cursor: default;
             box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
             transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .number-box:hover {
@@ -260,8 +264,17 @@
             border-radius: 10px;
             margin-bottom: 0;
             font-size: clamp(13px, 2vw, 14px);
-            display: none;
+            display: block; /* تم التعديل لحجز المساحة دائماً */
+            min-height: 44px; /* تم التعديل لحجز المساحة دائماً */
+            text-align: center;
             animation: slideIn 0.28s ease-out;
+        }
+
+        /* الكلاس الجديد للمسج الفارغة */
+        .message.neutral {
+            background: #f3f4f6;
+            color: #9ca3af;
+            border: 1px dashed #d1d5db;
         }
 
         .message.show {
@@ -272,18 +285,27 @@
             background: #d1fae5;
             color: #065f46;
             border-left: 4px solid #10b981;
+            border-top: none;
+            border-right: none;
+            border-bottom: none;
         }
 
         .message.error {
             background: #fee2e2;
             color: #7f1d1d;
             border-left: 4px solid #ef4444;
+            border-top: none;
+            border-right: none;
+            border-bottom: none;
         }
 
         .message.info {
             background: #dbeafe;
             color: #1e40af;
             border-left: 4px solid #3b82f6;
+            border-top: none;
+            border-right: none;
+            border-bottom: none;
         }
 
         @keyframes slideIn {
@@ -300,8 +322,10 @@
         .buttons-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr; /* تم التعديل لتمدد الأزرار */
             gap: 12px;
             margin-bottom: 0;
+            flex: 1; /* تم التعديل لتملأ المساحة */
         }
 
         .button {
@@ -316,6 +340,7 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            height: 100%; /* تم التعديل لتملأ المساحة */
         }
 
         .button:hover {
@@ -419,13 +444,16 @@
             }
 
             .numbers-grid {
-                grid-template-columns: repeat(2, 1fr);
+                /* تم الإبقاء على flex للموبايل أيضاً للتمدد */
+                flex-direction: row; 
+                flex-wrap: wrap;
                 gap: 10px;
             }
 
             .number-box {
                 padding: 14px;
                 font-size: 22px;
+                min-width: 40%;
             }
 
             .buttons-grid {
@@ -492,6 +520,13 @@
             .footer {
                 color: #6b7280;
             }
+            
+            /* ألوان المسج الفارغة في الدارك مود */
+            .message.neutral {
+                background: #1f2937;
+                color: #9ca3af;
+                border-color: #4b5563;
+            }
         }
     </style>
     <link rel="manifest" href="./manifest.json">
@@ -517,15 +552,14 @@
 
             <div class="numbers-label">Your Numbers</div>
             <div class="numbers-grid" id="numbersGrid">
-                <!-- Numbers will be inserted here by JavaScript -->
-            </div>
+                </div>
 
             <div class="input-group">
                 <label class="input-label">Enter Expression (e.g., 3 + 5 * 2 - 1)</label>
                 <input type="text" class="expression-input" id="expressionInput" placeholder="e.g., 3 + 5 * 2 - 1">
             </div>
 
-            <div class="message" id="message"></div>
+            <div class="message neutral" id="message">NOTE: Waiting for action...</div>
 
             <div class="buttons-grid">
                 <button class="button btn-check" onclick="checkAnswer()">✓ Check</button>
@@ -537,8 +571,7 @@
                     <div class="instructions-title">How to Play</div>
                     <ul class="instructions-list">
                         <li>Use each number exactly once</li>
-                        <li>Use exactly three operators (+, -, *, /)</li>
-                        <li>Division must result in whole numbers</li>
+                        <li>Use exactly three operators (+, -, *, /) and parentheses ()</li>
                         <li>Follows proper order of operations (*, / before +, -)</li>
                         <li>Goal: Make the result equal to 24</li>
                     </ul>
@@ -556,9 +589,6 @@
         // GAME LOGIC - Core Functions
         // ============================================
 
-        /**
-         * Shuffle an array using Fisher-Yates algorithm
-         */
         function shuffle(array) {
             const arr = [...array];
             for (let i = arr.length - 1; i > 0; i--) {
@@ -568,66 +598,77 @@
             return arr;
         }
 
-        /**
-         * Generate a new set of 4 random game numbers (1-13)
-         */
         function generateGameNumbers() {
             const allNumbers = Array.from({ length: 13 }, (_, i) => i + 1);
             const shuffled = shuffle(allNumbers);
             return shuffled.slice(0, 4);
         }
 
-        /**
-         * Safely evaluate a mathematical expression
-         * Validates integer division and follows proper order of operations
-         */
        function safeEvaluate(expression) {
             try {
-                // Validate expression contains only numbers, operators, and spaces
                 if (!/^[\d\s+\-*/()]+$/.test(expression)) {
                     return null;
                 }
-
-                // Use Function constructor for safe evaluation
                 const result = Function('"use strict"; return (' + expression + ')')();
-
-                // Ensure result is a valid number and NOT Infinity (resulting from division by zero)
                 if (typeof result !== "number" || isNaN(result) || !isFinite(result)) {
                     return null;
                 }
-
                 return result;
             } catch {
                 return null;
             }
         }
-        /**
-         * Get a solution expression for the given numbers if it exists
-         */
+
+        //  لإزالة الأقواس غير المؤثرة
+        function removeRedundantParentheses(expr) {
+            if (!expr) return expr;
+            let changed = true;
+            let currentExpr = expr;
+
+            while (changed) {
+                changed = false;
+                let stack = [];
+                let pairs = [];
+
+                for (let i = 0; i < currentExpr.length; i++) {
+                    if (currentExpr[i] === '(') stack.push(i);
+                    else if (currentExpr[i] === ')') {
+                        if (stack.length > 0) pairs.push({ start: stack.pop(), end: i });
+                    }
+                }
+
+                for (let i = 0; i < pairs.length; i++) {
+                    let { start, end } = pairs[i];
+                    let testExpr = currentExpr.slice(0, start) + currentExpr.slice(start + 1, end) + currentExpr.slice(end + 1);
+                    
+                    let result = safeEvaluate(testExpr);
+                    if (result !== null && Math.abs(result - 24) < 0.001) {
+                        currentExpr = testExpr;
+                        changed = true;
+                        break; 
+                    }
+                }
+            }
+            return currentExpr.replace(/\s+/g, ' ').trim();
+        }
+
         function getSolution(numbers) {
-            // نقوم بتحويل الأرقام إلى كائنات تحمل قيمتها الرقمية والنصية تتبعاً للحل
             const items = numbers.map(n => ({ val: n, str: n.toString() }));
             return solve(items);
         }
-        /*
-        * Recursive function to find a valid expression that equals 24
-        * It tries all combinations of numbers and operators
-        */
+        
         function solve(items) {
             if (items.length === 1) {
-                // إذا تبقّى رقم واحد، نتحقق هل يساوي 24 (مع مراعاة الكسور)
                 if (Math.abs(items[0].val - 24) < 0.001) {
                     return items[0].str;
                 }
                 return null;
             }
 
-            // نختار أي رقمين من المصفوفة الحالية
             for (let i = 0; i < items.length; i++) {
                 for (let j = 0; j < items.length; j++) {
                     if (i === j) continue; 
 
-                    // المصفوفة الجديدة بعد استبعاد الرقمين المختارين
                     const nextItems = items.filter((_, idx) => idx !== i && idx !== j);
 
                     const a = items[i];
@@ -653,16 +694,11 @@
             }
             return null; 
         }
-        /**
-         * Check if a solution exists for the given numbers
-         */
+
         function isSolvable(numbers) {
             return getSolution(numbers) !== null;
         }
 
-        /**
-         * Validate user expression
-         */
         function validateExpression(expression, gameNumbers) {
             const exp = expression.trim();
 
@@ -670,16 +706,13 @@
                 return { valid: false, error: "Expression cannot be empty." };
             }
 
-            // Extract all numbers from the expression
             const numberMatches = exp.match(/\d+/g) || [];
             const usedNumbers = numberMatches.map((n) => parseInt(n, 10));
 
-            // Check if exactly 4 numbers are used
             if (usedNumbers.length !== 4) {
                 return { valid: false, error: "Please use exactly 4 numbers." };
             }
 
-            // Check if all used numbers are from the game set
             const gameNumbersCopy = [...gameNumbers];
             for (const num of usedNumbers) {
                 const index = gameNumbersCopy.indexOf(num);
@@ -692,7 +725,6 @@
                 gameNumbersCopy.splice(index, 1);
             }
 
-            // Count operators
             const operatorMatches = exp.match(/[+\-*/]/g) || [];
             if (operatorMatches.length !== 3) {
                 return { valid: false, error: "Please use exactly 3 operators." };
@@ -711,36 +743,28 @@
             expression: "",
         };
 
-        /**
-         * Show loading overlay
-         */
         function showLoading() {
             document.getElementById("loadingOverlay").classList.add("show");
         }
 
-        /**
-         * Hide loading overlay
-         */
         function hideLoading() {
             document.getElementById("loadingOverlay").classList.remove("show");
         }
 
-        /**
-         * Initialize a new game (async)
-         * Ensures generated numbers have a valid solution
-         * Uses requestAnimationFrame to avoid blocking the UI
-         */
         async function initializeGame() {
             showLoading();
             
             return new Promise((resolve) => {
                 const generateSolvable = () => {
                     gameState.numbers = generateGameNumbers();
-                    gameState.solution = getSolution(gameState.numbers);
+                    let rawSolution = getSolution(gameState.numbers);
                     
-                    if (!gameState.solution) {
+                    if (!rawSolution) {
                         requestAnimationFrame(generateSolvable);
                     } else {
+                        // تفعيل الدالة الجديدة لتنظيف الحل من الأقواس الزائدة
+                        gameState.solution = removeRedundantParentheses(rawSolution);
+                        
                         gameState.expression = "";
                         document.getElementById("expressionInput").value = "";
                         clearMessage();
@@ -754,9 +778,6 @@
             });
         }
 
-        /**
-         * Render game numbers to the UI
-         */
         function renderNumbers() {
             const grid = document.getElementById("numbersGrid");
             grid.innerHTML = gameState.numbers
@@ -764,21 +785,16 @@
                 .join("");
         }
 
-        /**
-         * Show a message to the user
-         */
         function showMessage(text, type) {
             const messageEl = document.getElementById("message");
             messageEl.textContent = text;
             messageEl.className = `message show ${type}`;
         }
 
-        /**
-         * Clear the message
-         */
         function clearMessage() {
             const messageEl = document.getElementById("message");
-            messageEl.className = "message";
+            messageEl.textContent = "NOTE: Waiting for action...";
+            messageEl.className = "message neutral";
         }
 
         function setInstructionsVisible(isVisible) {
@@ -796,9 +812,6 @@
         // UI EVENT HANDLERS
         // ============================================
 
-        /**
-         * Handle Check button click
-         */
         function checkAnswer() {
             const expression = document.getElementById("expressionInput").value;
             const validation = validateExpression(expression, gameState.numbers);
@@ -825,9 +838,6 @@
             }
         }
 
-        /**
-         * Handle Solve button click
-         */
         function showSolution() {
             if (gameState.solution) {
                 showMessage(`Solution: ${gameState.solution}`, "info");
@@ -840,17 +850,10 @@
             }
         }
 
-        /**
-         * Handle New Game button click
-         */
         async function newGame() {
             await initializeGame();
-            showMessage("", "");
         }
 
-        /**
-         * Handle expression input changes
-         */
         document.addEventListener("DOMContentLoaded", async function () {
             const expressionInput = document.getElementById("expressionInput");
             const instructionsToggle = document.getElementById("instructionsToggle");
@@ -867,11 +870,9 @@
                 gameState.expression = this.value;
             });
 
-            // Initialize the game on page load
             await initializeGame();
         });
 
-        // Allow Enter key to check answer
         document.addEventListener("keypress", function (event) {
             if (event.key === "Enter") {
                 checkAnswer();
