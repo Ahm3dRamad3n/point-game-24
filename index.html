@@ -1,894 +1,977 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Point Game 24 - Make 24 using four numbers and three operators">
-    <meta name="theme-color" content="#3b82f6">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Point Game 24 - Make 24 using four numbers and three operators"
+    />
+    <meta name="theme-color" content="#3b82f6" />
     <title>Point Game 24 - PWA</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        html, body {
-            width: 100%;
-            height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            overflow: hidden;
-        }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+          Cantarell, sans-serif;
+        overflow: hidden;
+      }
 
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100dvh;
-            padding: 0; /* تم التعديل لتملأ الشاشة */
-        }
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100dvh;
+        padding: 0; /* تم التعديل لتملأ الشاشة */
+      }
 
+      .container {
+        background: white;
+        border-radius: 0; /* تم التعديل لتملأ الشاشة */
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        padding: 24px;
+        max-width: 100vw; /* تم التعديل لتملأ الشاشة */
+        width: 100%;
+        height: 100dvh; /* تم التعديل لتملأ الشاشة */
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .instructions-toggle {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        width: 50px;
+        height: 50px;
+        border: none;
+        border-radius: 999px;
+        background: linear-gradient(
+          135deg,
+          rgba(59, 130, 246, 0.96),
+          rgba(37, 99, 235, 0.96)
+        );
+        color: white;
+        font-size: 22px;
+        font-weight: 800;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        box-shadow:
+          0 14px 30px rgba(37, 99, 235, 0.28),
+          inset 0 1px 0 rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease,
+          filter 0.2s ease;
+        z-index: 10;
+      }
+
+      .instructions-toggle:hover {
+        transform: translateY(-1px) scale(1.03);
+        filter: brightness(1.05);
+        box-shadow:
+          0 16px 34px rgba(37, 99, 235, 0.34),
+          inset 0 1px 0 rgba(255, 255, 255, 0.22);
+      }
+
+      .instructions-toggle:focus-visible {
+        outline: none;
+        box-shadow:
+          0 0 0 4px rgba(59, 130, 246, 0.32),
+          0 12px 30px rgba(15, 23, 42, 0.22);
+      }
+
+      .loading-overlay {
+        display: none;
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        z-index: 15;
+        border-radius: 20px;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 20px;
+        animation: fadeIn 0.2s ease-out;
+      }
+
+      .loading-overlay.show {
+        display: flex;
+      }
+
+      .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid rgba(59, 130, 246, 0.2);
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .loading-text {
+        font-size: clamp(14px, 2vw, 16px);
+        color: #6b7280;
+        font-weight: 500;
+      }
+
+      .instructions-panel {
+        display: none;
+        animation: slideIn 0.28s ease-out;
+        position: absolute;
+        inset: 0;
+        z-index: 6;
+        padding: 82px 18px 18px;
+        background: rgba(15, 23, 42, 0.26);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 20px;
+        align-items: flex-start;
+        justify-content: center;
+      }
+
+      .instructions-panel .instructions {
+        width: min(100%, 520px);
+        margin-top: 0;
+        border-radius: 18px;
+        box-shadow: 0 22px 50px rgba(15, 23, 42, 0.22);
+        border: 1px solid rgba(148, 163, 184, 0.18);
+      }
+
+      .instructions-panel.show {
+        display: flex;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 0;
+        flex: 0 0 auto;
+      }
+
+      .title {
+        font-size: clamp(20px, 3.8vw, 32px);
+        font-weight: bold;
+        color: #1f2937;
+        margin-bottom: 10px;
+      }
+
+      .subtitle {
+        font-size: clamp(13px, 2.4vw, 16px);
+        color: #6b7280;
+      }
+
+      .game-section {
+        background: #f9fafb;
+        border-radius: 15px;
+        padding: 24px;
+        margin-bottom: 0;
+        flex: 1; /* تم التعديل لتملأ المساحة */
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .game-header {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        text-align: center;
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 0;
+      }
+
+      .numbers-label {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 0;
+        font-weight: 500;
+      }
+
+      .numbers-grid {
+        display: flex; /* تم التعديل إلى Flex لتمدد الأزرار */
+        flex: 1; /* تم التعديل لتملأ المساحة */
+        gap: clamp(8px, 1.6vw, 14px);
+        margin-bottom: 0;
+        align-items: stretch;
+      }
+
+      .number-box {
+        flex: 1; /* تم التعديل لتملأ المساحة */
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 18px;
+        font-size: clamp(22px, 4vw, 28px);
+        font-weight: bold;
+        cursor: default;
+        box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+        transition: transform 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .number-box:hover {
+        transform: translateY(-2px);
+      }
+
+      .input-group {
+        margin-bottom: 0;
+      }
+
+      .input-label {
+        display: block;
+        font-size: 14px;
+        color: #374151;
+        margin-bottom: 8px;
+        font-weight: 500;
+      }
+
+      .expression-input {
+        width: 100%;
+        padding: clamp(10px, 1.8vw, 14px) clamp(12px, 2.2vw, 16px);
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: clamp(13px, 2.2vw, 16px);
+        transition: border-color 0.3s;
+      }
+
+      .expression-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      }
+
+      .message {
+        padding: clamp(10px, 1.8vw, 14px) clamp(12px, 2vw, 16px);
+        border-radius: 10px;
+        margin-bottom: 0;
+        font-size: clamp(13px, 2vw, 14px);
+        display: block; /* تم التعديل لحجز المساحة دائماً */
+        min-height: 44px; /* تم التعديل لحجز المساحة دائماً */
+        text-align: center;
+        animation: slideIn 0.28s ease-out;
+      }
+
+      /* الكلاس الجديد للمسج الفارغة */
+      .message.neutral {
+        background: #f3f4f6;
+        color: #9ca3af;
+        border: 1px dashed #d1d5db;
+      }
+
+      .message.show {
+        display: block;
+      }
+
+      .message.success {
+        background: #d1fae5;
+        color: #065f46;
+        border-left: 4px solid #10b981;
+        border-top: none;
+        border-right: none;
+        border-bottom: none;
+      }
+
+      .message.error {
+        background: #fee2e2;
+        color: #7f1d1d;
+        border-left: 4px solid #ef4444;
+        border-top: none;
+        border-right: none;
+        border-bottom: none;
+      }
+
+      .message.info {
+        background: #dbeafe;
+        color: #1e40af;
+        border-left: 4px solid #3b82f6;
+        border-top: none;
+        border-right: none;
+        border-bottom: none;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .buttons-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr; /* تم التعديل لتمدد الأزرار */
+        gap: 12px;
+        margin-bottom: 0;
+        flex: 1; /* تم التعديل لتملأ المساحة */
+      }
+
+      .button {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        height: 100%; /* تم التعديل لتملأ المساحة */
+      }
+
+      .button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .button:active {
+        transform: translateY(0);
+      }
+
+      .btn-check {
+        grid-column: 1 / -1;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+      }
+
+      .btn-solve {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        color: white;
+      }
+
+      .btn-new-game {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+      }
+
+      .instructions {
+        background: #f0f9ff;
+        border-left: 4px solid #3b82f6;
+        padding: 20px;
+        border-radius: 16px;
+        margin-top: 0;
+      }
+
+      .instructions-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e40af;
+        margin-bottom: 12px;
+      }
+
+      .instructions-list {
+        list-style: none;
+        font-size: 14px;
+        color: #374151;
+        line-height: 1.8;
+      }
+
+      .instructions-list li {
+        margin-bottom: 8px;
+        padding-left: 20px;
+        position: relative;
+      }
+
+      .instructions-list li:before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: #3b82f6;
+        font-weight: bold;
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 0;
+        font-size: 12px;
+        color: #9ca3af;
+        flex: 0 0 auto;
+      }
+
+      @media (max-width: 600px) {
         .container {
-            background: white;
-            border-radius: 0; /* تم التعديل لتملأ الشاشة */
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 24px;
-            max-width: 100vw; /* تم التعديل لتملأ الشاشة */
-            width: 100%;
-            height: 100dvh; /* تم التعديل لتملأ الشاشة */
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .instructions-toggle {
-            position: absolute;
-            top: 16px;
-            left: 16px;
-            width: 50px;
-            height: 50px;
-            border: none;
-            border-radius: 999px;
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.96), rgba(37, 99, 235, 0.96));
-            color: white;
-            font-size: 22px;
-            font-weight: 800;
-            cursor: pointer;
-            display: grid;
-            place-items: center;
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            box-shadow: 0 14px 30px rgba(37, 99, 235, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-            border: 1px solid rgba(255, 255, 255, 0.28);
-            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
-            z-index: 10;
-        }
-
-        .instructions-toggle:hover {
-            transform: translateY(-1px) scale(1.03);
-            filter: brightness(1.05);
-            box-shadow: 0 16px 34px rgba(37, 99, 235, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.22);
-        }
-
-        .instructions-toggle:focus-visible {
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.32), 0 12px 30px rgba(15, 23, 42, 0.22);
-        }
-
-        .loading-overlay {
-            display: none;
-            position: absolute;
-            inset: 0;
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-            z-index: 15;
-            border-radius: 20px;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 20px;
-            animation: fadeIn 0.2s ease-out;
-        }
-
-        .loading-overlay.show {
-            display: flex;
-        }
-
-        .spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid rgba(59, 130, 246, 0.2);
-            border-top-color: #3b82f6;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
-        }
-
-        .loading-text {
-            font-size: clamp(14px, 2vw, 16px);
-            color: #6b7280;
-            font-weight: 500;
-        }
-
-        .instructions-panel {
-            display: none;
-            animation: slideIn 0.28s ease-out;
-            position: absolute;
-            inset: 0;
-            z-index: 6;
-            padding: 82px 18px 18px;
-            background: rgba(15, 23, 42, 0.26);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 20px;
-            align-items: flex-start;
-            justify-content: center;
-        }
-
-        .instructions-panel .instructions {
-            width: min(100%, 520px);
-            margin-top: 0;
-            border-radius: 18px;
-            box-shadow: 0 22px 50px rgba(15, 23, 42, 0.22);
-            border: 1px solid rgba(148, 163, 184, 0.18);
-        }
-
-        .instructions-panel.show {
-            display: flex;
+          padding: 16px;
+          gap: 12px;
         }
 
         .header {
-            text-align: center;
-            margin-bottom: 0;
-            flex: 0 0 auto;
+          padding-top: 30px;
+          height: 130px;
         }
 
         .title {
-            font-size: clamp(20px, 3.8vw, 32px);
-            font-weight: bold;
-            color: #1f2937;
-            margin-bottom: 10px;
+          font-size: 24px;
         }
 
         .subtitle {
-            font-size: clamp(13px, 2.4vw, 16px);
-            color: #6b7280;
+          font-size: 14px;
         }
 
         .game-section {
-            background: #f9fafb;
-            border-radius: 15px;
-            padding: 24px;
-            margin-bottom: 0;
-            flex: 1; /* تم التعديل لتملأ المساحة */
-            min-height: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            position: relative;
-            overflow: hidden;
+          padding: 18px;
+          gap: 10px;
         }
 
-        .game-header {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 0;
+        .instructions-toggle {
+          top: 12px;
+          left: 12px;
+          width: 44px;
+          height: 44px;
+          font-size: 20px;
         }
 
-        .numbers-label {
-            font-size: 14px;
-            color: #6b7280;
-            margin-bottom: 0;
-            font-weight: 500;
+        .instructions-panel {
+          padding: 68px 12px 12px;
         }
 
         .numbers-grid {
-            display: flex; /* تم التعديل إلى Flex لتمدد الأزرار */
-            flex: 1; /* تم التعديل لتملأ المساحة */
-            gap: clamp(8px, 1.6vw, 14px);
-            margin-bottom: 0;
-            align-items: stretch;
+          flex-direction: row;
+          flex-wrap: wrap;
+          gap: 15px;
         }
 
         .number-box {
-            flex: 1; /* تم التعديل لتملأ المساحة */
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 18px;
-            font-size: clamp(22px, 4vw, 28px);
-            font-weight: bold;
-            cursor: default;
-            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
-            transition: transform 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .number-box:hover {
-            transform: translateY(-2px);
-        }
-
-        .input-group {
-            margin-bottom: 0;
-        }
-
-        .input-label {
-            display: block;
-            font-size: 14px;
-            color: #374151;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .expression-input {
-            width: 100%;
-            padding: clamp(10px, 1.8vw, 14px) clamp(12px, 2.2vw, 16px);
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: clamp(13px, 2.2vw, 16px);
-            transition: border-color 0.3s;
-        }
-
-        .expression-input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .message {
-            padding: clamp(10px, 1.8vw, 14px) clamp(12px, 2vw, 16px);
-            border-radius: 10px;
-            margin-bottom: 0;
-            font-size: clamp(13px, 2vw, 14px);
-            display: block; /* تم التعديل لحجز المساحة دائماً */
-            min-height: 44px; /* تم التعديل لحجز المساحة دائماً */
-            text-align: center;
-            animation: slideIn 0.28s ease-out;
-        }
-
-        /* الكلاس الجديد للمسج الفارغة */
-        .message.neutral {
-            background: #f3f4f6;
-            color: #9ca3af;
-            border: 1px dashed #d1d5db;
-        }
-
-        .message.show {
-            display: block;
-        }
-
-        .message.success {
-            background: #d1fae5;
-            color: #065f46;
-            border-left: 4px solid #10b981;
-            border-top: none;
-            border-right: none;
-            border-bottom: none;
-        }
-
-        .message.error {
-            background: #fee2e2;
-            color: #7f1d1d;
-            border-left: 4px solid #ef4444;
-            border-top: none;
-            border-right: none;
-            border-bottom: none;
-        }
-
-        .message.info {
-            background: #dbeafe;
-            color: #1e40af;
-            border-left: 4px solid #3b82f6;
-            border-top: none;
-            border-right: none;
-            border-bottom: none;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+          padding: 14px;
+          font-size: 22px;
+          min-width: 40%;
         }
 
         .buttons-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr; /* تم التعديل لتمدد الأزرار */
-            gap: 12px;
-            margin-bottom: 0;
-            flex: 1; /* تم التعديل لتملأ المساحة */
+          gap: 15px;
+        }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
         }
 
-        .button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            height: 100%; /* تم التعديل لتملأ المساحة */
+        .instructions-toggle {
+          background: linear-gradient(
+            135deg,
+            rgba(96, 165, 250, 0.96),
+            rgba(59, 130, 246, 0.96)
+          );
+          border-color: rgba(191, 219, 254, 0.24);
+          color: #f8fafc;
         }
 
-        .button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        .container {
+          background: #1f2937;
+          color: #f3f4f6;
         }
 
-        .button:active {
-            transform: translateY(0);
+        .title {
+          color: #f3f4f6;
         }
 
-        .btn-check {
-            grid-column: 1 / -1;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
+        .subtitle {
+          color: #d1d5db;
         }
 
-        .btn-solve {
-            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-            color: white;
+        .game-section {
+          background: #111827;
         }
 
-        .btn-new-game {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            color: white;
+        .instructions-panel {
+          background: rgba(2, 6, 23, 0.42);
+        }
+
+        .input-label,
+        .numbers-label {
+          color: #d1d5db;
+        }
+
+        .expression-input {
+          background: #374151;
+          color: #f3f4f6;
+          border-color: #4b5563;
+        }
+
+        .expression-input:focus {
+          border-color: #3b82f6;
         }
 
         .instructions {
-            background: #f0f9ff;
-            border-left: 4px solid #3b82f6;
-            padding: 20px;
-            border-radius: 16px;
-            margin-top: 0;
+          background: #0f172a;
+          color: #e0e7ff;
         }
 
         .instructions-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #1e40af;
-            margin-bottom: 12px;
-        }
-
-        .instructions-list {
-            list-style: none;
-            font-size: 14px;
-            color: #374151;
-            line-height: 1.8;
-        }
-
-        .instructions-list li {
-            margin-bottom: 8px;
-            padding-left: 20px;
-            position: relative;
-        }
-
-        .instructions-list li:before {
-            content: "•";
-            position: absolute;
-            left: 0;
-            color: #3b82f6;
-            font-weight: bold;
+          color: #93c5fd;
         }
 
         .footer {
-            text-align: center;
-            margin-top: 0;
-            font-size: 12px;
-            color: #9ca3af;
-            flex: 0 0 auto;
+          color: #6b7280;
         }
 
-        @media (max-width: 600px) {
-            .container {
-                padding: 16px;
-                gap: 12px;
-            }
-
-            .title {
-                font-size: 24px;
-            }
-
-            .subtitle {
-                font-size: 14px;
-            }
-
-            .game-section {
-                padding: 18px;
-                gap: 10px;
-            }
-
-            .instructions-toggle {
-                top: 12px;
-                left: 12px;
-                width: 44px;
-                height: 44px;
-                font-size: 20px;
-            }
-
-            .instructions-panel {
-                padding: 68px 12px 12px;
-            }
-
-            .numbers-grid {
-                /* تم الإبقاء على flex للموبايل أيضاً للتمدد */
-                flex-direction: row; 
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-
-            .number-box {
-                padding: 14px;
-                font-size: 22px;
-                min-width: 40%;
-            }
-
-            .buttons-grid {
-                gap: 10px;
-            }
+        /* ألوان المسج الفارغة في الدارك مود */
+        .message.neutral {
+          background: #1f2937;
+          color: #9ca3af;
+          border-color: #4b5563;
         }
-
-        @media (prefers-color-scheme: dark) {
-            body {
-                background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            }
-
-            .instructions-toggle {
-                background: linear-gradient(135deg, rgba(96, 165, 250, 0.96), rgba(59, 130, 246, 0.96));
-                border-color: rgba(191, 219, 254, 0.24);
-                color: #f8fafc;
-            }
-
-            .container {
-                background: #1f2937;
-                color: #f3f4f6;
-            }
-
-            .title {
-                color: #f3f4f6;
-            }
-
-            .subtitle {
-                color: #d1d5db;
-            }
-
-            .game-section {
-                background: #111827;
-            }
-
-            .instructions-panel {
-                background: rgba(2, 6, 23, 0.42);
-            }
-
-            .input-label,
-            .numbers-label {
-                color: #d1d5db;
-            }
-
-            .expression-input {
-                background: #374151;
-                color: #f3f4f6;
-                border-color: #4b5563;
-            }
-
-            .expression-input:focus {
-                border-color: #3b82f6;
-            }
-
-            .instructions {
-                background: #0f172a;
-                color: #e0e7ff;
-            }
-
-            .instructions-title {
-                color: #93c5fd;
-            }
-
-            .footer {
-                color: #6b7280;
-            }
-            
-            /* ألوان المسج الفارغة في الدارك مود */
-            .message.neutral {
-                background: #1f2937;
-                color: #9ca3af;
-                border-color: #4b5563;
-            }
-        }
+      }
     </style>
-    <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#3b82f6">
-    <link rel="icon" href="./icons/icon-192x192.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body>
+    <link rel="manifest" href="./manifest.json" />
+    <meta name="theme-color" content="#3b82f6" />
+    <link rel="icon" href="./icons/icon-192x192.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
     <div class="container">
-        <button class="instructions-toggle" id="instructionsToggle" type="button" aria-label="Show instructions" aria-expanded="false">?</button>
+      <button
+        class="instructions-toggle"
+        id="instructionsToggle"
+        type="button"
+        aria-label="Show instructions"
+        aria-expanded="false"
+      >
+        ?
+      </button>
 
-        <div class="header">
-            <div class="title">Point Game 24</div>
-            <div class="subtitle">Use the four numbers and three operators to make 24</div>
+      <div class="header">
+        <div class="title">Point Game 24</div>
+        <div class="subtitle">
+          Use the four numbers and three operators to make 24
+        </div>
+      </div>
+
+      <div class="game-section">
+        <div class="loading-overlay" id="loadingOverlay">
+          <div class="spinner"></div>
+          <div class="loading-text">Generating puzzle...</div>
+        </div>
+        <div class="game-header">Make 24</div>
+
+        <div class="numbers-label">Your Numbers</div>
+        <div class="numbers-grid" id="numbersGrid"></div>
+
+        <div class="input-group">
+          <label class="input-label"
+            >Enter Expression (e.g., 3 + 5 * 2 - 1)</label
+          >
+          <input
+            type="text"
+            class="expression-input"
+            id="expressionInput"
+            placeholder="e.g., 3 + 5 * 2 - 1"
+          />
         </div>
 
-        <div class="game-section">
-            <div class="loading-overlay" id="loadingOverlay">
-                <div class="spinner"></div>
-                <div class="loading-text">Generating puzzle...</div>
-            </div>
-            <div class="game-header">Make 24</div>
-
-            <div class="numbers-label">Your Numbers</div>
-            <div class="numbers-grid" id="numbersGrid">
-                </div>
-
-            <div class="input-group">
-                <label class="input-label">Enter Expression (e.g., 3 + 5 * 2 - 1)</label>
-                <input type="text" class="expression-input" id="expressionInput" placeholder="e.g., 3 + 5 * 2 - 1">
-            </div>
-
-            <div class="message neutral" id="message">NOTE: Waiting for action...</div>
-
-            <div class="buttons-grid">
-                <button class="button btn-check" onclick="checkAnswer()">✓ Check</button>
-                <button class="button btn-solve" onclick="showSolution()">⊙ Solve</button>
-                <button class="button btn-new-game" onclick="newGame()">↻ New Game</button>
-            </div>
-            <div class="instructions instructions-panel" id="instructionsPanel" aria-hidden="true">
-                <div class="instructions">
-                    <div class="instructions-title">How to Play</div>
-                    <ul class="instructions-list">
-                        <li>Use each number exactly once</li>
-                        <li>Use exactly three operators (+, -, *, /) and parentheses ()</li>
-                        <li>Follows proper order of operations (*, / before +, -)</li>
-                        <li>Goal: Make the result equal to 24</li>
-                    </ul>
-                </div>
-            </div>
+        <div class="message neutral" id="message">
+          NOTE: Waiting for action...
         </div>
 
-        <div class="footer">
-            <p>Challenge yourself to find the solution!</p>
+        <div class="buttons-grid">
+          <button class="button btn-check" onclick="checkAnswer()">
+            ✓ Check
+          </button>
+          <button class="button btn-solve" onclick="showSolution()">
+            ⊙ Solve
+          </button>
+          <button class="button btn-new-game" onclick="newGame()">
+            ↻ New Game
+          </button>
         </div>
+        <div
+          class="instructions instructions-panel"
+          id="instructionsPanel"
+          aria-hidden="true"
+        >
+          <div class="instructions">
+            <div class="instructions-title">How to Play</div>
+            <ul class="instructions-list">
+              <li>Use each number exactly once</li>
+              <li>
+                Use exactly three operators (+, -, *, /) and parentheses ()
+              </li>
+              <li>Follows proper order of operations (*, / before +, -)</li>
+              <li>Goal: Make the result equal to 24</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>Challenge yourself to find the solution!</p>
+      </div>
     </div>
 
     <script>
-        // ============================================
-        // GAME LOGIC - Core Functions
-        // ============================================
+      // ============================================
+      // GAME LOGIC - Core Functions
+      // ============================================
 
-        function shuffle(array) {
-            const arr = [...array];
-            for (let i = arr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [arr[i], arr[j]] = [arr[j], arr[i]];
+      function shuffle(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      function generateGameNumbers() {
+        const allNumbers = Array.from({ length: 13 }, (_, i) => i + 1);
+        const shuffled = shuffle(allNumbers);
+        return shuffled.slice(0, 4);
+      }
+
+      function safeEvaluate(expression) {
+        try {
+          if (!/^[\d\s+\-*/()]+$/.test(expression)) {
+            return null;
+          }
+          const result = Function(
+            '"use strict"; return (' + expression + ")",
+          )();
+          if (
+            typeof result !== "number" ||
+            isNaN(result) ||
+            !isFinite(result)
+          ) {
+            return null;
+          }
+          return result;
+        } catch {
+          return null;
+        }
+      }
+
+      //  لإزالة الأقواس غير المؤثرة
+      function removeRedundantParentheses(expr) {
+        if (!expr) return expr;
+        let changed = true;
+        let currentExpr = expr;
+
+        while (changed) {
+          changed = false;
+          let stack = [];
+          let pairs = [];
+
+          for (let i = 0; i < currentExpr.length; i++) {
+            if (currentExpr[i] === "(") stack.push(i);
+            else if (currentExpr[i] === ")") {
+              if (stack.length > 0) pairs.push({ start: stack.pop(), end: i });
             }
-            return arr;
-        }
+          }
 
-        function generateGameNumbers() {
-            const allNumbers = Array.from({ length: 13 }, (_, i) => i + 1);
-            const shuffled = shuffle(allNumbers);
-            return shuffled.slice(0, 4);
-        }
+          for (let i = 0; i < pairs.length; i++) {
+            let { start, end } = pairs[i];
+            let testExpr =
+              currentExpr.slice(0, start) +
+              currentExpr.slice(start + 1, end) +
+              currentExpr.slice(end + 1);
 
-       function safeEvaluate(expression) {
-            try {
-                if (!/^[\d\s+\-*/()]+$/.test(expression)) {
-                    return null;
-                }
-                const result = Function('"use strict"; return (' + expression + ')')();
-                if (typeof result !== "number" || isNaN(result) || !isFinite(result)) {
-                    return null;
-                }
-                return result;
-            } catch {
-                return null;
+            let result = safeEvaluate(testExpr);
+            if (result !== null && Math.abs(result - 24) < 0.001) {
+              currentExpr = testExpr;
+              changed = true;
+              break;
             }
+          }
+        }
+        return currentExpr.replace(/\s+/g, " ").trim();
+      }
+
+      function getSolution(numbers) {
+        const items = numbers.map((n) => ({ val: n, str: n.toString() }));
+        return solve(items);
+      }
+
+      function solve(items) {
+        if (items.length === 1) {
+          if (Math.abs(items[0].val - 24) < 0.001) {
+            return items[0].str;
+          }
+          return null;
         }
 
-        //  لإزالة الأقواس غير المؤثرة
-        function removeRedundantParentheses(expr) {
-            if (!expr) return expr;
-            let changed = true;
-            let currentExpr = expr;
+        for (let i = 0; i < items.length; i++) {
+          for (let j = 0; j < items.length; j++) {
+            if (i === j) continue;
 
-            while (changed) {
-                changed = false;
-                let stack = [];
-                let pairs = [];
+            const nextItems = items.filter((_, idx) => idx !== i && idx !== j);
 
-                for (let i = 0; i < currentExpr.length; i++) {
-                    if (currentExpr[i] === '(') stack.push(i);
-                    else if (currentExpr[i] === ')') {
-                        if (stack.length > 0) pairs.push({ start: stack.pop(), end: i });
-                    }
-                }
+            const a = items[i];
+            const b = items[j];
 
-                for (let i = 0; i < pairs.length; i++) {
-                    let { start, end } = pairs[i];
-                    let testExpr = currentExpr.slice(0, start) + currentExpr.slice(start + 1, end) + currentExpr.slice(end + 1);
-                    
-                    let result = safeEvaluate(testExpr);
-                    if (result !== null && Math.abs(result - 24) < 0.001) {
-                        currentExpr = testExpr;
-                        changed = true;
-                        break; 
-                    }
-                }
-            }
-            return currentExpr.replace(/\s+/g, ' ').trim();
-        }
+            const possibilities = [
+              { val: a.val + b.val, str: `(${a.str} + ${b.str})` },
+              { val: a.val - b.val, str: `(${a.str} - ${b.str})` },
+              { val: a.val * b.val, str: `(${a.str} * ${b.str})` },
+            ];
 
-        function getSolution(numbers) {
-            const items = numbers.map(n => ({ val: n, str: n.toString() }));
-            return solve(items);
-        }
-        
-        function solve(items) {
-            if (items.length === 1) {
-                if (Math.abs(items[0].val - 24) < 0.001) {
-                    return items[0].str;
-                }
-                return null;
-            }
-
-            for (let i = 0; i < items.length; i++) {
-                for (let j = 0; j < items.length; j++) {
-                    if (i === j) continue; 
-
-                    const nextItems = items.filter((_, idx) => idx !== i && idx !== j);
-
-                    const a = items[i];
-                    const b = items[j];
-
-                    const possibilities = [
-                        { val: a.val + b.val, str: `(${a.str} + ${b.str})` },
-                        { val: a.val - b.val, str: `(${a.str} - ${b.str})` },
-                        { val: a.val * b.val, str: `(${a.str} * ${b.str})` }
-                    ];
-
-                    if (b.val !== 0) {
-                        possibilities.push({ val: a.val / b.val, str: `(${a.str} / ${b.str})` });
-                    }
-
-                    for (const p of possibilities) {
-                        nextItems.push(p);
-                        const result = solve(nextItems);
-                        if (result) return result;
-                        nextItems.pop(); 
-                    }
-                }
-            }
-            return null; 
-        }
-
-        function isSolvable(numbers) {
-            return getSolution(numbers) !== null;
-        }
-
-        function validateExpression(expression, gameNumbers) {
-            const exp = expression.trim();
-
-            if (!exp) {
-                return { valid: false, error: "Expression cannot be empty." };
+            if (b.val !== 0) {
+              possibilities.push({
+                val: a.val / b.val,
+                str: `(${a.str} / ${b.str})`,
+              });
             }
 
-            const numberMatches = exp.match(/\d+/g) || [];
-            const usedNumbers = numberMatches.map((n) => parseInt(n, 10));
-
-            if (usedNumbers.length !== 4) {
-                return { valid: false, error: "Please use exactly 4 numbers." };
+            for (const p of possibilities) {
+              nextItems.push(p);
+              const result = solve(nextItems);
+              if (result) return result;
+              nextItems.pop();
             }
+          }
+        }
+        return null;
+      }
 
-            const gameNumbersCopy = [...gameNumbers];
-            for (const num of usedNumbers) {
-                const index = gameNumbersCopy.indexOf(num);
-                if (index === -1) {
-                    return {
-                        valid: false,
-                        error: `Please use the given numbers only: ${gameNumbers.join(", ")}`,
-                    };
-                }
-                gameNumbersCopy.splice(index, 1);
-            }
+      function isSolvable(numbers) {
+        return getSolution(numbers) !== null;
+      }
 
-            const operatorMatches = exp.match(/[+\-*/]/g) || [];
-            if (operatorMatches.length !== 3) {
-                return { valid: false, error: "Please use exactly 3 operators." };
-            }
+      function validateExpression(expression, gameNumbers) {
+        const exp = expression.trim();
 
-            return { valid: true, expression: exp };
+        if (!exp) {
+          return { valid: false, error: "Expression cannot be empty." };
         }
 
-        // ============================================
-        // GAME STATE MANAGEMENT
-        // ============================================
+        const numberMatches = exp.match(/\d+/g) || [];
+        const usedNumbers = numberMatches.map((n) => parseInt(n, 10));
 
-        let gameState = {
-            numbers: [],
-            solution: null,
-            expression: "",
-        };
-
-        function showLoading() {
-            document.getElementById("loadingOverlay").classList.add("show");
+        if (usedNumbers.length !== 4) {
+          return { valid: false, error: "Please use exactly 4 numbers." };
         }
 
-        function hideLoading() {
-            document.getElementById("loadingOverlay").classList.remove("show");
+        const gameNumbersCopy = [...gameNumbers];
+        for (const num of usedNumbers) {
+          const index = gameNumbersCopy.indexOf(num);
+          if (index === -1) {
+            return {
+              valid: false,
+              error: `Please use the given numbers only: ${gameNumbers.join(", ")}`,
+            };
+          }
+          gameNumbersCopy.splice(index, 1);
         }
 
-        async function initializeGame() {
-            showLoading();
-            
-            return new Promise((resolve) => {
-                const generateSolvable = () => {
-                    gameState.numbers = generateGameNumbers();
-                    let rawSolution = getSolution(gameState.numbers);
-                    
-                    if (!rawSolution) {
-                        requestAnimationFrame(generateSolvable);
-                    } else {
-                        // تفعيل الدالة الجديدة لتنظيف الحل من الأقواس الزائدة
-                        gameState.solution = removeRedundantParentheses(rawSolution);
-                        
-                        gameState.expression = "";
-                        document.getElementById("expressionInput").value = "";
-                        clearMessage();
-                        renderNumbers();
-                        hideLoading();
-                        resolve();
-                    }
-                };
-                
-                generateSolvable();
-            });
+        const operatorMatches = exp.match(/[+\-*/]/g) || [];
+        if (operatorMatches.length !== 3) {
+          return { valid: false, error: "Please use exactly 3 operators." };
         }
 
-        function renderNumbers() {
-            const grid = document.getElementById("numbersGrid");
-            grid.innerHTML = gameState.numbers
-                .map((num) => `<button class="number-box">${num}</button>`)
-                .join("");
-        }
+        return { valid: true, expression: exp };
+      }
 
-        function showMessage(text, type) {
-            const messageEl = document.getElementById("message");
-            messageEl.textContent = text;
-            messageEl.className = `message show ${type}`;
-        }
+      // ============================================
+      // GAME STATE MANAGEMENT
+      // ============================================
 
-        function clearMessage() {
-            const messageEl = document.getElementById("message");
-            messageEl.textContent = "NOTE: Waiting for action...";
-            messageEl.className = "message neutral";
-        }
+      let gameState = {
+        numbers: [],
+        solution: null,
+        expression: "",
+      };
 
-        function setInstructionsVisible(isVisible) {
-            const panel = document.getElementById("instructionsPanel");
-            const toggle = document.getElementById("instructionsToggle");
+      function showLoading() {
+        document.getElementById("loadingOverlay").classList.add("show");
+      }
 
-            panel.classList.toggle("show", isVisible);
-            panel.setAttribute("aria-hidden", String(!isVisible));
-            toggle.setAttribute("aria-expanded", String(isVisible));
-            toggle.setAttribute("aria-label", isVisible ? "Hide instructions" : "Show instructions");
-            toggle.textContent = isVisible ? "×" : "?";
-        }
+      function hideLoading() {
+        document.getElementById("loadingOverlay").classList.remove("show");
+      }
 
-        // ============================================
-        // UI EVENT HANDLERS
-        // ============================================
+      async function initializeGame() {
+        showLoading();
+        return new Promise((resolve) => {
+          const generateSolvable = () => {
+            gameState.numbers = generateGameNumbers();
+            let rawSolution = getSolution(gameState.numbers);
 
-        function checkAnswer() {
-            const expression = document.getElementById("expressionInput").value;
-            const validation = validateExpression(expression, gameState.numbers);
-
-            if (!validation.valid) {
-                showMessage(validation.error || "Invalid expression", "error");
-                return;
-            }
-
-            const result = safeEvaluate(validation.expression);
-
-            if (result === null) {
-                showMessage(
-                    "Incorrect! Invalid operation (division by zero or non-integer division).",
-                    "error"
-                );
-                return;
-            }
-
-            if (result === 24) {
-                showMessage(`Correct! ${validation.expression} = 24`, "success");
+            if (!rawSolution) {
+              requestAnimationFrame(generateSolvable);
             } else {
-                showMessage(`Incorrect! ${validation.expression} = ${result}`, "error");
+              // تفعيل الدالة الجديدة لتنظيف الحل من الأقواس الزائدة
+              gameState.solution = removeRedundantParentheses(rawSolution);
+
+              gameState.expression = "";
+              document.getElementById("expressionInput").value = "";
+              clearMessage();
+              renderNumbers();
+              hideLoading();
+              resolve();
             }
+          };
+
+          generateSolvable();
+        });
+      }
+
+      function renderNumbers() {
+        const grid = document.getElementById("numbersGrid");
+        grid.innerHTML = gameState.numbers
+          .map((num) => `<button class="number-box">${num}</button>`)
+          .join("");
+      }
+
+      function showMessage(text, type) {
+        const messageEl = document.getElementById("message");
+        messageEl.textContent = text;
+        messageEl.className = `message show ${type}`;
+      }
+
+      function clearMessage() {
+        const messageEl = document.getElementById("message");
+        messageEl.textContent = "NOTE: Waiting for action...";
+        messageEl.className = "message neutral";
+      }
+
+      function setInstructionsVisible(isVisible) {
+        const panel = document.getElementById("instructionsPanel");
+        const toggle = document.getElementById("instructionsToggle");
+
+        panel.classList.toggle("show", isVisible);
+        panel.setAttribute("aria-hidden", String(!isVisible));
+        toggle.setAttribute("aria-expanded", String(isVisible));
+        toggle.setAttribute(
+          "aria-label",
+          isVisible ? "Hide instructions" : "Show instructions",
+        );
+        toggle.textContent = isVisible ? "×" : "?";
+      }
+
+      // ============================================
+      // UI EVENT HANDLERS
+      // ============================================
+
+      function checkAnswer() {
+        const expression = document.getElementById("expressionInput").value;
+        const validation = validateExpression(expression, gameState.numbers);
+
+        if (!validation.valid) {
+          showMessage(validation.error || "Invalid expression", "error");
+          return;
         }
 
-        function showSolution() {
-            if (gameState.solution) {
-                showMessage(`Solution: ${gameState.solution}`, "info");
-                document.getElementById("expressionInput").value = gameState.solution;
-            } else {
-                showMessage(
-                    "No solution exists. Click 'New Game' to get new numbers.",
-                    "info"
-                );
-            }
+        const result = safeEvaluate(validation.expression);
+
+        if (result === null) {
+          showMessage(
+            "Incorrect! Invalid operation (division by zero or non-integer division).",
+            "error",
+          );
+          return;
         }
 
-        async function newGame() {
-            await initializeGame();
+        if (result === 24) {
+          showMessage(`Correct! ${validation.expression} = 24`, "success");
+        } else {
+          showMessage(
+            `Incorrect! ${validation.expression} = ${result}`,
+            "error",
+          );
         }
+      }
 
-        document.addEventListener("DOMContentLoaded", async function () {
-            const expressionInput = document.getElementById("expressionInput");
-            const instructionsToggle = document.getElementById("instructionsToggle");
+      function showSolution() {
+        if (gameState.solution) {
+          showMessage(`Solution: ${gameState.solution}`, "info");
+          document.getElementById("expressionInput").value = gameState.solution;
+        } else {
+          showMessage(
+            "No solution exists. Click 'New Game' to get new numbers.",
+            "info",
+          );
+        }
+      }
 
-            setInstructionsVisible(false);
+      async function newGame() {
+        await initializeGame();
+      }
 
-            instructionsToggle.addEventListener("click", function () {
-                const panel = document.getElementById("instructionsPanel");
-                const shouldShow = !panel.classList.contains("show");
-                setInstructionsVisible(shouldShow);
-            });
+      document.addEventListener("DOMContentLoaded", async function () {
+        const expressionInput = document.getElementById("expressionInput");
+        const instructionsToggle =
+          document.getElementById("instructionsToggle");
 
-            expressionInput.addEventListener("input", function () {
-                gameState.expression = this.value;
-            });
+        setInstructionsVisible(false);
 
-            await initializeGame();
+        instructionsToggle.addEventListener("click", function () {
+          const panel = document.getElementById("instructionsPanel");
+          const shouldShow = !panel.classList.contains("show");
+          setInstructionsVisible(shouldShow);
         });
 
-        document.addEventListener("keypress", function (event) {
-            if (event.key === "Enter") {
-                checkAnswer();
-            }
+        expressionInput.addEventListener("input", function () {
+          gameState.expression = this.value;
         });
+
+        await initializeGame();
+      });
+
+      document.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+          checkAnswer();
+        }
+      });
     </script>
     <script>
-        if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-            navigator.serviceWorker.register('./service-worker.js').then(function(registration) {
-            console.log('ServiceWorker registration successful with scope: ', registration.scope);
-            }, function(err) {
-            console.log('ServiceWorker registration failed: ', err);
-            });
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+          navigator.serviceWorker.register("./service-worker.js").then(
+            function (registration) {
+              console.log(
+                "ServiceWorker registration successful with scope: ",
+                registration.scope,
+              );
+            },
+            function (err) {
+              console.log("ServiceWorker registration failed: ", err);
+            },
+          );
         });
-        }
+      }
     </script>
-</body>
+  </body>
 </html>
